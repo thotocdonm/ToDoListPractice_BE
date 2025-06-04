@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+require('./models/User');
+require('./models/Board');
 
 const sequelize = require('./config/database');
 
@@ -17,7 +19,11 @@ app.get('/', (req, res) => {
 });
 
 const authRoutes = require('./routes/auth');
+const boardRoutes = require('./routes/board');
+
 app.use('/api/auth', authRoutes);
+app.use('/api/board',boardRoutes);
+
 
 
 sequelize.authenticate()
@@ -28,6 +34,13 @@ sequelize.authenticate()
         console.error('❌ Unable to connect to the database:', err);
     });
 
+// sequelize.sync({ alter: true })
+//     .then(() => {
+//         console.log('✅ All models were synchronized successfully.');
+//     })
+//     .catch(err => {
+//         console.error('❌ Error synchronizing models:', err);
+//     });
 
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);

@@ -5,14 +5,15 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const User = require('../models/User');
+const response = require('../helper/response')
 
-router.post('/register', async (req,res) =>{
+router.post('/register', async (req,res,next) =>{
     const {username,email,password} = req.body;
 
     try {
         const existingUser = await User.findOne({where:{email}});
         if(existingUser){
-            return res.status(500).json({message:'Email already in use'})
+            return response(res, next, 409, 'Email already in use', 'ERROR');
         }
 
         const hashedPassword = await bcrypt.hash(password,10)
@@ -23,25 +24,29 @@ router.post('/register', async (req,res) =>{
             password:hashedPassword
         })
 
-        res.status(201).json({ message: 'User created successfully'});
+        return response(res, next, 201, 'Register successful', 'SUCCESS', {
+            id: newUser.id,
+            email: newUser.email,
+        });
     } catch (e){
         console.log(e);
-        res.status(500).json({message:'Server error'})
+
+        return response(res, next, 500, 'Server error', 'ERROR');
     }
 })
 
-router.post('/login',async (req,res)=>{
+router.post('/login',async (req,res,next)=>{
     const {email,password} = req.body;
 
     try {
         const user = await User.findOne({where:{email}});
         if(!user){
-            return res.status(400).json({message:'Invalid credentials'})
+            return response(res, next, 400, 'Invalid credentials', 'ERROR');
         }
 
         const isMatch = await bcrypt.compare(password,user.password);
         if(!isMatch){
-            return res.status(400).json({message:'Invalid credentials'})
+            return response(res, next, 400, 'Invalid credentials', 'ERROR');
         }
 
         const token = jwt.sign(
@@ -50,10 +55,10 @@ router.post('/login',async (req,res)=>{
             {expiresIn: '1d'}
         )
 
-        res.json({ message: 'Login successful', token });
+        return response(res, next, 200, 'Login successful', 'SUCCESS', { id:user.id,email:user.email,accessToken:token });
     } catch (e){
         console.log(e)
-        res.status(500).json({message:'Server error'})
+        return response(res, next, 500, 'Server error', 'ERROR');
     }
 })
 
