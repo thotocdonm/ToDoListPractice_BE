@@ -5,14 +5,14 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const authenticateToken = require('../middleware/authenticationToken');
 
-const Board = require('../models/Board');
+const List = require('../models/List');
 const response = require('../helper/response');
 
 router.post('/',authenticateToken, async (req, res, next) => {
     try {
-        const {title} = req.body;
-        const data = await Board.create({title,ownerId:req.user.id});
-        return response(res, next, 201, "Board created", "SUCCESS", data);
+        const {title,boardId} = req.body;
+        const data = await List.create({title,boardId});
+        return response(res, next, 201, "List created", "SUCCESS", data);
     } catch (e) {
         console.error(e);
         return response(res, next, 500, e.message, "ERROR", null);
@@ -21,15 +21,15 @@ router.post('/',authenticateToken, async (req, res, next) => {
 
 router.get('/',authenticateToken, async (req, res, next) => {
     try {
-        const { ownerId } = req.query;
+        const { boardId } = req.query;
         const where = {};
 
-        if (ownerId) {
-            where.ownerId = ownerId;
+        if (boardId) {
+            where.boardId = boardId;
         }
 
-        const boards = await Board.findAll({where});
-        return response(res, next, 200, "Boards retrieved", "SUCCESS", boards);
+        const boards = await List.findAll({where});
+        return response(res, next, 200, "Lists retrieved", "SUCCESS", boards);
     } catch (e) {
         console.error(e);
         return response(res, next, 500, e.message, "ERROR", null);
@@ -39,11 +39,11 @@ router.get('/',authenticateToken, async (req, res, next) => {
 router.get('/:id',authenticateToken, async (req, res, next) => {
     try {
         const {id} = req.params;
-        const board = await Board.findOne({id});
-        if(!board){
-            return response(res, next, 400, 'Board does not exist', 'ERROR');
+        const list = await List.findOne({id});
+        if(!list){
+            return response(res, next, 400, 'List does not exist', 'ERROR');
         }
-        return response(res, next, 200, "Board retrieved", "SUCCESS", board);
+        return response(res, next, 200, "List retrieved", "SUCCESS", list);
     } catch (e) {
         console.error(e);
         return response(res, next, 500, e.message, "ERROR", null);
@@ -54,13 +54,13 @@ router.put('/:id',authenticateToken, async (req, res, next) => {
     try {
         const {id} = req.params;
         const {title} = req.body;
-        const board = await Board.findOne({id});
-        if(!board){
-            return response(res, next, 400, 'Board does not exist', 'ERROR');
+        const list = await List.findOne({id});
+        if(!list){
+            return response(res, next, 400, 'List does not exist', 'ERROR');
         }
-        board.title = title;
-        await board.save();
-        return response(res, next, 200, "Board updated", "SUCCESS", board);
+        list.title = title;
+        await list.save();
+        return response(res, next, 200, "List updated", "SUCCESS", list);
     } catch (e) {
         console.error(e);
         return response(res, next, 500, e.message, "ERROR", null);
@@ -70,12 +70,12 @@ router.put('/:id',authenticateToken, async (req, res, next) => {
 router.delete('/:id',authenticateToken, async (req, res, next) => {
     try {
         const {id} = req.params;
-        const board = await Board.findOne({id});
-        if(!board){
-            return response(res, next, 400, 'Board does not exist', 'ERROR');
+        const list = await List.findOne({id});
+        if(!list){
+            return response(res, next, 400, 'List does not exist', 'ERROR');
         }
-        await board.destroy();
-        return response(res, next, 200, "Board deleted", "SUCCESS", board);
+        await list.destroy();
+        return response(res, next, 200, "List deleted", "SUCCESS", list);
     } catch (e) {
         console.error(e);
         return response(res, next, 500, e.message, "ERROR", null);

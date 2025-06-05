@@ -4,6 +4,7 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 require('./models/User');
 require('./models/Board');
+require('./models/List');
 
 const sequelize = require('./config/database');
 
@@ -20,9 +21,12 @@ app.get('/', (req, res) => {
 
 const authRoutes = require('./routes/auth');
 const boardRoutes = require('./routes/board');
+const listRoutes = require('./routes/list')
 
 app.use('/api/auth', authRoutes);
 app.use('/api/board',boardRoutes);
+app.use('/api/list',listRoutes);
+
 
 
 
